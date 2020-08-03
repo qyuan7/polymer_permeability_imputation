@@ -25,7 +25,10 @@ def fill_missing(model, pim_df,log_cols, name):
 
 
 def main():
-    pass
+    log_gases = ['log10_He', 'log10_H2', 'log10_O2', 'log10_N2', 'log10_CO2', 'log10_CH4']
+    parser = argparse.ArgumentParser()
+    parser.add_argument('database_path')
+
 if __name__ == '__main__':
     log_gases = ['log10_He', 'log10_H2', 'log10_O2', 'log10_N2', 'log10_CO2', 'log10_CH4']
     model2 = IterativeImputer(random_state=0,max_iter=10)
