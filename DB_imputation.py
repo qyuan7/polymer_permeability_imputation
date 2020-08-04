@@ -13,8 +13,25 @@ from sklearn.ensemble import ExtraTreesRegressor
 import argparse
 import logging
 
+logging.basicConfig(format='%(message)s',level=logging.DEBUG)
+
+
 @ignore_warnings(category=ConvergenceWarning)
 def fill_missing(model, pim_df,log_cols, name):
+    """
+    Fill missing values in the database containing gas permeability data.
+    Args:
+        model: the model to use within the MICE imputation
+        pim_df: pandas dataframe containing gas permeability data
+        log_cols: list of names of columns to be imputed
+        name: name of the ML model: Bayesian, etree
+    Returns: Database with imputed columns
+    """
+    db_size = len(pim_df)
+    logging.info(f'Number of data points: {db_size}\n')
+    for col in log_cols:
+        missing_cnt = sum(pim_df[col].isnull())
+        logging.info(f'Number of missing values for {col}: {missing_cnt}')
     log_perms = pim_df[log_cols].to_numpy()
     log_cp = log_perms.copy()
     transformer = model
@@ -22,6 +39,7 @@ def fill_missing(model, pim_df,log_cols, name):
     new_cols = [log_gas+'_'+name for log_gas in log_cols]
     new_df = pd.DataFrame(data=log_full, columns=new_cols)
     r_df = pd.concat([pim_df, new_df], axis=1)
+    logging.info('Imputation completed.\n')
     return r_df
 
 
@@ -39,6 +57,8 @@ def main():
         model = IterativeImputer(estimator=ExtraTreesRegressor(n_estimators=100),
                                  random_state=0,
                                  max_iter=200)
+    logging.info(f'Database path: {dfname}')
+    logging.info(f'ML method: {m}\n')
     df_to_fill = pd.read_csv(dfname)
     df_imputed = fill_missing(model, df_to_fill, log_gases, m)
     fname = dfname[:-4]
